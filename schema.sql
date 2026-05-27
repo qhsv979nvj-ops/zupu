@@ -1,0 +1,67 @@
+-- 电子族谱 MySQL 数据库表结构
+-- 在本地 MySQL 中执行此文件即可建表
+
+CREATE DATABASE IF NOT EXISTS family_tree DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE family_tree;
+
+-- 家族表
+CREATE TABLE IF NOT EXISTS families (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  surname VARCHAR(20) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  family_id INT NOT NULL,
+  contact VARCHAR(50) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  is_admin TINYINT(1) DEFAULT 0,
+  nickname VARCHAR(50) DEFAULT NULL,
+  avatar LONGTEXT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE,
+  UNIQUE KEY uk_family_contact (family_id, contact)
+) ENGINE=InnoDB;
+
+-- 族谱树数据表
+CREATE TABLE IF NOT EXISTS family_tree (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  family_id INT NOT NULL UNIQUE,
+  tree_data JSON NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 待审核变更表
+CREATE TABLE IF NOT EXISTS pending_changes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  family_id INT NOT NULL,
+  change_data JSON NOT NULL,
+  status ENUM('pending','approved','rejected','cancelled') DEFAULT 'pending',
+  submitted_by VARCHAR(50) NOT NULL,
+  reviewed_by VARCHAR(50) DEFAULT NULL,
+  review_reason TEXT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 操作日志表
+CREATE TABLE IF NOT EXISTS operation_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  family_id INT NOT NULL,
+  log_data JSON NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 家族大事记表
+CREATE TABLE IF NOT EXISTS timeline_events (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  family_id INT NOT NULL,
+  event_data JSON NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

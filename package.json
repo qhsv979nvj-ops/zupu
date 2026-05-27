@@ -1,0 +1,16 @@
+{
+  "name": "family-tree",
+  "version": "1.0.0",
+  "description": "电子族谱 - 家族谱系管理与展示系统",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.9.0",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3"
+  }
+}
